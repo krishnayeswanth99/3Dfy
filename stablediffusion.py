@@ -40,12 +40,12 @@ def generate_images_to_video(prompts=[], fps=5, file_path='video.mp4'):
 
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    video = cv2.VideoWriter(file_path, fourcc, 5, (1024, 1024))
+    video = cv2.VideoWriter(file_path, fourcc, fps, (1024, 1024))
 
     # Write the images to the video
     for img_lis in video_seconds:
         for img in img_lis:
-            video.write(cv2.cvtColor(get_360(np.array(img)), cv2.COLOR_RGB2BGR))
+            video.write(cv2.cvtColor(get_360(cv2.resize(np.array(img),(1024,1024))), cv2.COLOR_RGB2BGR))
 
     video.release()
 
@@ -57,4 +57,4 @@ prompts = [
     "Create an enchanting video exploring mystical realms and magical encounters. Use the stable diffusion model to weave together scenes of enchanting forests, ancient ruins, and mystical creatures, imbuing the video with an air of mystery and wonder that invites viewers on a spellbinding adventure through the realms of fantasy"
 ]
 
-generate_images_to_video(prompts)
+# generate_images_to_video(prompts)
