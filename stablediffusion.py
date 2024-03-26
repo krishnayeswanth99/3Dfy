@@ -40,7 +40,7 @@ def generate_images_to_video(prompts=[], fps=5, file_path='video.mp4'):
 
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    video = cv2.VideoWriter(file_path, fourcc, fps, (1024, 1024))
+    video = cv2.VideoWriter(file_path, fourcc, fps, (2048, 1024))
 
     # Write the images to the video
     for img_lis in video_seconds:
