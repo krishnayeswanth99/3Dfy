@@ -50,6 +50,7 @@ def generate_images_to_video(prompts=[], fps=5, file_path='video.mp4'):
 
     video.release()
     flush()
+    return video_seconds
 
 prompts = [
     "Create a mesmerizing video that portrays the passage of time through various landscapes, seasons, and natural phenomena. Utilize the stable diffusion model to seamlessly blend transitions between different time periods, showcasing the beauty of evolution and change.",
