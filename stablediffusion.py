@@ -49,7 +49,10 @@ def generate_images_to_video(prompts=[], fps=5, file_path='video.mp4'):
             video.write(cv2.cvtColor(get_360(cv2.resize(np.array(img),(1024,1024))), cv2.COLOR_RGB2BGR))
 
     video.release()
+    
+    del pipe
     flush()
+    
     return video_seconds
 
 prompts = [
