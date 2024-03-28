@@ -6,6 +6,7 @@ from diffusers.models import AutoencoderKL
 from PIL import Image
 from tqdm import tqdm
 from image_util import get_360
+from utils import flush
 import numpy as np
 import cv2
 
@@ -48,6 +49,7 @@ def generate_images_to_video(prompts=[], fps=5, file_path='video.mp4'):
             video.write(cv2.cvtColor(get_360(cv2.resize(np.array(img),(1024,1024))), cv2.COLOR_RGB2BGR))
 
     video.release()
+    flush()
 
 prompts = [
     "Create a mesmerizing video that portrays the passage of time through various landscapes, seasons, and natural phenomena. Utilize the stable diffusion model to seamlessly blend transitions between different time periods, showcasing the beauty of evolution and change.",
