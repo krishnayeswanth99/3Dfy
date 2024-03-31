@@ -1,3 +1,4 @@
+from matplotlib.pyplot import fill
 import torch
 from huggingface_hub import hf_hub_download
 from diffusers import DiffusionPipeline, StableDiffusionXLPipeline, StableDiffusionXLImg2ImgPipeline, StableDiffusionPipeline, StableDiffusionImg2ImgPipeline
@@ -5,7 +6,7 @@ from cog_sdxl.dataset_and_utils import TokenEmbeddingsHandler
 from diffusers.models import AutoencoderKL
 from PIL import Image
 from tqdm import tqdm
-from image_util import get_360
+from image_util import get_360, combine_images, add_top_bottom, image_quantization
 from utils import flush
 import numpy as np
 import cv2
@@ -56,7 +57,7 @@ def generate_images_to_video(prompts=[], fps=5, file_path='video.mp4'):
     
     return video_seconds
 
-def __generate_3d_from_image_text(img, prompt='', n=1):
+def __generate_3d_from_image_text(img, prompt='', n=1, gen_n=2):
 
     pipe_xl = DiffusionPipeline.from_pretrained(
         "stabilityai/stable-diffusion-xl-base-1.0",
@@ -91,10 +92,14 @@ def __generate_3d_from_image_text(img, prompt='', n=1):
     images = []
 
     for _ in tqdm(range(n)):
-        images.append(pipe_img2img(prompt=prompt+" <s0><s1>", image=img, strength=0.75,
+        yt = []
+        for i in range(gen_n):
+            yt.append(pipe_img2img(prompt=prompt+" <s0><s1>", image=img, strength=0.75,
                         guidance_scale=7.5,
                         cross_attention_kwargs={"scale": 0.8},
                         added_cond_kwargs={}).images[0])
+        
+        images.append(yt)
     
     del pipe_xl, pipe_img2img, text_encoders, tokenizers, embhandler
 
@@ -102,7 +107,7 @@ def __generate_3d_from_image_text(img, prompt='', n=1):
     
     return images
 
-def generate_similar_image_to_video(images=[], prompts=[], fps=5, file_path='video.mp4'):
+def generate_similar_image_to_video(images=[], prompts=[], fps=5, file_path='video.mp4', two_img=False):
 
     video_seconds = []
 
@@ -113,7 +118,12 @@ def generate_similar_image_to_video(images=[], prompts=[], fps=5, file_path='vid
     video = cv2.VideoWriter(file_path, fourcc, fps, (2048, 1024))
 
     for img_lis in video_seconds:
-        for img in img_lis:
+        for imgs in img_lis:
+            if two_img:
+                img = __merge_images(imgs)
+            else:
+                img = imgs[0]
+            
             video.write(cv2.cvtColor(get_360(cv2.resize(np.array(img),(1024,1024))), cv2.COLOR_RGB2BGR))
 
     video.release()
@@ -121,6 +131,16 @@ def generate_similar_image_to_video(images=[], prompts=[], fps=5, file_path='vid
     flush()
 
     return video_seconds
+
+def __merge_images(images):
+    img_arr = combine_images(images, strip_size=2)
+    new_img = np.concatenate(img_arr, axis=1)
+
+    new_img = add_top_bottom(new_img,fill_top_last=True,
+                             fill_bottom_last=True)
+    new_img = image_quantization(new_img)
+
+    return new_img
 
 # prompts = [
 #     "Create a mesmerizing video that portrays the passage of time through various landscapes, seasons, and natural phenomena. Utilize the stable diffusion model to seamlessly blend transitions between different time periods, showcasing the beauty of evolution and change.",
