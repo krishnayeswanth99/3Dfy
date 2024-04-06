@@ -14,14 +14,18 @@ import cv2
 
 def generate_images_to_video(prompts=[], fps=5, file_path='video.mp4', to_cuda=False):
 
-    pipe = DiffusionPipeline.from_pretrained(
-            "stabilityai/stable-diffusion-xl-base-1.0",
-            torch_dtype=torch.float16,
-            variant="fp16",
-    )
-
     if to_cuda:
-        pipe = pipe.to("cuda")
+        pipe = DiffusionPipeline.from_pretrained(
+                "stabilityai/stable-diffusion-xl-base-1.0",
+                torch_dtype=torch.float16,
+                variant="fp16",
+        ).to("cuda")
+    else:
+        pipe = DiffusionPipeline.from_pretrained(
+                "stabilityai/stable-diffusion-xl-base-1.0",
+                torch_dtype=torch.float32,
+                variant="fp16",
+        )
 
     pipe.load_lora_weights("jbilcke-hf/sdxl-panorama", weight_name="lora.safetensors")
 
@@ -62,11 +66,19 @@ def generate_images_to_video(prompts=[], fps=5, file_path='video.mp4', to_cuda=F
 
 def __generate_3d_from_image_text(img, prompt='', n=1, gen_n=2, to_cuda=False):
 
-    pipe_xl = DiffusionPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-xl-base-1.0",
-        torch_dtype=torch.float16,
-        variant="fp16",
-    )
+    if to_cuda:
+        pipe_xl = DiffusionPipeline.from_pretrained(
+            "stabilityai/stable-diffusion-xl-base-1.0",
+            torch_dtype=torch.float16,
+            variant="fp16",
+        )
+    else:
+        pipe_xl = DiffusionPipeline.from_pretrained(
+            "stabilityai/stable-diffusion-xl-base-1.0",
+            torch_dtype=torch.float32,
+            variant="fp16",
+        )
+    
     pipe_img2img = StableDiffusionXLImg2ImgPipeline(
         vae=pipe_xl.vae,
         text_encoder=pipe_xl.text_encoder,
